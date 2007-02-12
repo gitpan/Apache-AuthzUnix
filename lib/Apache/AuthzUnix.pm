@@ -1,5 +1,5 @@
 package Apache::AuthzUnix;
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 our $DEBUG   = 0;
 require File::stat;
 use File::Basename qw(dirname);
@@ -51,7 +51,7 @@ sub _access {
     my ($u, $g, $o) = ($perms & 0700, $perms & 0070, $perms & 0007);
     my $user        = getpwnam($username);
     my %in_group    = map { $_ => 1 } @{ getgrgid($gid)->members };
-    my $bit         = $method eq "PUT" ? 2 : 4;
+    my $bit         = $method =~ /(PUT|DELETE)/ ? 2 : 4;
 
     return 1 if $o & $bit
              || ($uid == $user->uid and $u & ($bit << 6))
@@ -87,9 +87,9 @@ directories, but probably has other uses in the C<UserDir> space.
 Assuming that Apache has authenticated a user, this module helps to
 determine whether or not that user can read (or write) a file on the
 filesystem. It applies standard Unix user and group tests on the file's
-permissions to determine read access and, in the case of C<PUT> methods,
-write access. If the file does not exist, then the containing directory
-is tested, as one would expect.
+permissions to determine read access and, in the case of C<PUT> and
+C<DELETE> methods, write access. If the file does not exist, then the 
+containing directory is tested, as one would expect.
 
 This module is designed work on both mod_perl versions 1 and 2.
 
